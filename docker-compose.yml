@@ -1,0 +1,94 @@
+services:
+  # 1. The Message Broker (Our Queue)
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  # 1.5 The Vault (Our Database)
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=pipeline_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. The Master Node (FastAPI Receptionist)
+  api:
+    image: python:3.10-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    # This command installs the requirements and starts the API server
+    command: >
+      bash -c "pip install -r api/requirements.txt && 
+      uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - db
+
+  # 5. The User Interface (Streamlit)
+  ui:
+    image: python:3.10-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      bash -c "pip install -r ui/requirements.txt && 
+      streamlit run ui/app.py --server.port 8501 --server.address 0.0.0.0"
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+
+  # 3. The Heavy Lifter (Celery Worker)
+  worker:
+    image: python:3.10-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    # This command installs the requirements and starts the Celery worker
+    command: >
+      bash -c "pip install -r worker/requirements.txt && 
+      celery -A worker.tasks worker --loglevel=info"
+    depends_on:
+      - redis
+      - db
+
+  # 4. The Command Center
+  flower:
+    image: mher/flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - worker
+
+  # 6. The Alarm Clock (Celery Beat)
+  beat:
+    image: python:3.10-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      bash -c "pip install -r worker/requirements.txt && 
+      celery -A worker.tasks beat --loglevel=info"
+    depends_on:
+      - redis
+      - db
+
+    dns:               # Custom DNS resolution for external API fetches
+      - 8.8.8.8        # Primary Google DNS
+      - 8.8.4.4        # Secondary Google DNS
+
+# This part goes at the VERY BOTTOM of the file, after all services
+volumes:
+  postgres_data:

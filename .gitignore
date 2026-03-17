@@ -1,0 +1,23 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Docker & Database
+postgres_data/
+.docker/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.csv
+vault_report.csv
