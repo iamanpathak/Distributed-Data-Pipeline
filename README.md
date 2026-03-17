@@ -1,4 +1,4 @@
-# Distributed Data Pipeline Architecture
+# Distributed Data Pipeline
 
 An end-to-end, resilient, and highly available data processing pipeline built on a decoupled microservices architecture. 
 
