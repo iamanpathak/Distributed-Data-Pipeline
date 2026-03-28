@@ -8,6 +8,7 @@ Hey! I’m Aman. I built this project to demonstrate how a production-grade data
 
 I designed this with a "fail-safe" mindset. Each component is isolated so that a crash in one node doesn't halt the entire pipeline.
 
+```text
     [Streamlit UI] ──(HTTP POST)──> [FastAPI Gateway]
                                            │
                 ┌─────────────────────────┴─────────────────────────┐
@@ -26,6 +27,7 @@ I designed this with a "fail-safe" mindset. Each component is isolated so that a
                                                                                      ▼
                                                                              [Discord Alerts]
                                                                            (Fatal Failure Hook)
+```
 
 ### 🛣️ The Request Lifecycle
 1. **The Entry Point:** Jobs are submitted via the Streamlit dashboard or FastAPI Swagger.
@@ -39,11 +41,11 @@ I designed this with a "fail-safe" mindset. Each component is isolated so that a
 
 ## 📸 System Mastery (Visual Proof)
 
+*Note: These are live captures from my development environment showing the system under load.*
+
 ### 1. Central Command Center
 The Streamlit dashboard for real-time monitoring of processing loads and system health metrics.
-<p align="center">
-  <img src="assets/dashboard.png" width="900">
-</p>
+<p align="center"><img src="assets/dashboard.png" width="900"></p>
 
 ### 2. The PostgreSQL Vault
 A peek into the persistent storage where the system tracks every SUCCESS and FAILURE.
@@ -54,28 +56,20 @@ Monitoring 3 concurrent worker nodes handling parallel execution to maximize thr
 <p align="center"><img src="assets/celery-workers.png" width="900"></p>
 
 ### 4. Smart Rate Limiting
-Protection in action-this is what happens when the Redis-backed request limit is breached.
-<p align="center">
-  <img src="assets/rate-limiting.png" width="900">
-</p>
+Protection in action—this is what happens when the Redis-backed request limit is breached.
+<p align="center"><img src="assets/rate-limiting.png" width="900"></p>
 
 ### 5. Resilience & Observability (Discord)
 The automatic retry sequence (2s -> 4s -> 8s) before a Fatal Failure is logged.
-<p align="center">
-  <img src="assets/discord-alert.png" width="900">
-</p>
+<p align="center"><img src="assets/discord-alert.png" width="900"></p>
 
 ### 6. Dead Letter Queue (DLQ) Audit
 A direct SQL audit proving that every failed job is preserved for manual recovery.
-<p align="center">
-  <img src="assets/database-dlq.png" width="900">
-</p>
+<p align="center"><img src="assets/database-dlq.png" width="900"></p>
 
 ### 7. Interactive API Blueprint
 The FastAPI Swagger UI providing an interactive map for third-party integrations.
-<p align="center">
-  <img src="assets/api-docs.png" width="900">
-</p>
+<p align="center"><img src="assets/api-docs.png" width="900"></p>
 
 ---
 
@@ -95,6 +89,7 @@ Distributed-Data-Pipeline/
 ├── docker-compose.yml    # Multi-container Orchestration
 ├── requirements.txt      # Environment Dependencies
 └── .env.example          # Template for Discord Webhooks
+```
 
 ---
 
@@ -111,12 +106,16 @@ Distributed-Data-Pipeline/
 ## 🚀 Get it Running Locally
 
 1. **Clone & Setup**
-git clone https://github.com/iamanpathak/Distributed-Data-Pipeline.git
+```bash
+git clone [https://github.com/iamanpathak/Distributed-Data-Pipeline.git](https://github.com/iamanpathak/Distributed-Data-Pipeline.git)
 cd Distributed-Data-Pipeline
 cp .env.example .env # Add your Discord Webhook URL here
+```
 
 2. **Launch Infrastructure**
+```bash
 docker-compose up -d --build --scale worker=3
+```
 
 3. **Explore the Services**
 * **Live Dashboard:** http://localhost:8501
@@ -124,4 +123,4 @@ docker-compose up -d --build --scale worker=3
 * **Celery Task Monitor (Flower):** http://localhost:5555
 
 ---
-Developed with ❤️ by [Aman Pathak]
+Developed with ❤️ by [Aman Pathak](https://github.com/iamanpathak)
