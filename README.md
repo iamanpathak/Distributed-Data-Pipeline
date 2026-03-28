@@ -56,7 +56,7 @@ Monitoring 3 concurrent worker nodes handling parallel execution to maximize thr
 <p align="center"><img src="assets/celery-workers.png" width="900"></p>
 
 ### 4. Smart Rate Limiting
-Protection in action—this is what happens when the Redis-backed request limit is breached.
+Protection in action-this is what happens when the Redis-backed request limit is breached.
 <p align="center"><img src="assets/rate-limiting.png" width="900"></p>
 
 ### 5. Resilience & Observability (Discord)
