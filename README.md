@@ -47,18 +47,14 @@ The Streamlit dashboard for real-time monitoring of processing loads and system 
 
 ### 2. The PostgreSQL Vault
 A peek into the persistent storage where the system tracks every SUCCESS and FAILURE.
-<p align="center">
-  <img src="assets/vault-records.png" width="900">
-</p>
+<p align="center"><img src="assets/vault-records.png" width="900"></p>
 
 ### 3. Distributed Worker Cluster (Flower)
 Monitoring 3 concurrent worker nodes handling parallel execution to maximize throughput.
-<p align="center">
-  <img src="assets/celery-workers.png" width="900">
-</p>
+<p align="center"><img src="assets/celery-workers.png" width="900"></p>
 
 ### 4. Smart Rate Limiting
-Protection in action—this is what happens when the Redis-backed request limit is breached.
+Protection in action-this is what happens when the Redis-backed request limit is breached.
 <p align="center">
   <img src="assets/rate-limiting.png" width="900">
 </p>
@@ -85,6 +81,7 @@ The FastAPI Swagger UI providing an interactive map for third-party integrations
 
 ## 📂 Project Structure
 
+```text
 Distributed-Data-Pipeline/
 ├── api/                  # FastAPI Gateway & Rate Limiting
 │   ├── main.py           # Entry point & API Routes
