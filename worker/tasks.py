@@ -9,16 +9,28 @@ import requests
 from celery.exceptions import MaxRetriesExceededError
 import os
 
-# Ensure the Webhook URL is loaded securely from the environment variables
+# Security Best Practice: Fetching the Webhook URL from environment variables to avoid hardcoding secrets
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "YOUR_DISCORD_WEBHOOK_URL_HERE")
 
 def send_discord_alert(message):
-    """Sends a live push notification to the configured Discord channel."""
+    """
+    Dispatches a real-time notification to the configured Discord channel.
+    Includes sanitization to handle potential whitespace in environment variables.
+    """
+    if not DISCORD_WEBHOOK_URL:
+        return
+
     try:
+        # Sanitize the URL to remove any accidental spaces or quotes from .env
+        clean_url = DISCORD_WEBHOOK_URL.strip().replace('"', '').replace("'", "")
+        
         data = {"content": message}
-        requests.post(DISCORD_WEBHOOK_URL, json=data)
+        response = requests.post(clean_url, json=data, timeout=5)
+        
+        # Log the response status for internal debugging
+        print(f"DEBUG: Discord Webhook Response Code: {response.status_code}")
     except Exception as e:
-        print(f"Discord Alert Failed: {e}")
+        print(f"ERROR: Failed to send Discord alert: {e}")
 
 # 1. Connect Celery to Redis (Message Broker & Result Backend)
 # 'redis:6379' is the internal Docker hostname and port for the queue
@@ -28,73 +40,104 @@ celery_app = Celery(
     backend="redis://redis:6379/0"
 )
 
-# 2. Register the function as a Celery background task
-# bind=True and max_retries=3 enable the task to handle its own retry logic
+# Task Orchestration: Asynchronous processing with automated retry management.
+# 'bind=True' allows the task to access its own execution state for custom retry logic.
 @celery_app.task(bind=True, max_retries=3, name="worker.tasks.process_heavy_data")
 def process_heavy_data(self, job_id: str, data_size: int):
-    """Processes data and persists the result to the database on success OR failure (DLQ)."""
+    """
+    This is the main function that does the heavy work. 
+    It is designed to 'try again' automatically if it runs into an error.
+    """
     print(f"[{job_id}] Worker received task. Size: {data_size}MB")
     
     try:
-        # Simulate heavy lifting
+        # Step 1: Pretend to do hard work by waiting for a few seconds.
+        # If a negative number is sent, this line will crash on purpose.
         time.sleep(data_size)
         
-        # CHAOS MONKEY: 50% chance to simulate a crash for resilience testing
+        # Step 2: Randomly crash 50% of the time.
+        # This helps us test if our 'Retry' logic actually works.
         if random.choice([True, False]):
             attempt_num = self.request.retries + 1
             error_msg = f"🚨 **CRITICAL ALERT:** Job `{job_id}` crashed on attempt {attempt_num}! Retrying..."
-            print(error_msg)
             send_discord_alert(error_msg)
             raise ValueError("Simulated Network Error")
             
-        # SUCCESS PATH: Persist record to Database
+        # Step 3: If everything went well, save the 'SUCCESS' result to our Database.
         db = SessionLocal()
         try:
             new_record = JobRecord(
                 job_id=job_id,
                 status="SUCCESS",
                 data_size=data_size,
-                result_data="Successfully processed and cleaned.",
+                result_data="Job finished successfully!",
                 created_at=datetime.datetime.now(timezone.utc)
             )
             db.add(new_record)
             db.commit()
-            print(f"[{job_id}] ✅ RECORD SAVED TO VAULT!")
-        except Exception as e:
+            print(f"[{job_id}] SUCCESS: Result saved to the Vault.")
+        except Exception as db_err:
             db.rollback()
+            print(f"Database Error: {db_err}")
         finally:
             db.close()
             
-        return f"Processed {data_size}MB for {job_id}"
+        return f"Successfully processed {job_id}"
 
     except Exception as exc:
-        print(f"[{job_id}] ⚠️ Task Failed! Retrying...")
-        try:
-            # Re-queue the task with a 2-second countdown before the next attempt
-            self.retry(exc=exc, countdown=2)
-        except MaxRetriesExceededError:
-            # DEAD LETTER QUEUE (DLQ) PATH: All retries exhausted
-            fatal_msg = f"💀 **PERMANENT FAILURE:** Job `{job_id}` is completely dead. Moving to DLQ Vault."
+        # --- IF SOMETHING GOES WRONG ---
+        
+        # Count how many times we have already tried to fix this job.
+        current_retry_count = self.request.retries
+        
+        # FINAL FAILURE: If we tried 3 times and still fail, give up.
+        if current_retry_count >= self.max_retries:
+            fatal_msg = (
+                f"💀 **FATAL FAILURE**\n"
+                f"Job `{job_id}` failed even after **{self.max_retries}** retries.\n"
+                f"Giving up and moving this job to the 'Failed' list."
+            )
             print(fatal_msg)
             send_discord_alert(fatal_msg)
             
-            # Persist the FAILED state to the Database to ensure zero data loss
+            # Save the 'FAILED' status to the database so we know it didn't work.
             db = SessionLocal()
             try:
                 failed_record = JobRecord(
                     job_id=job_id,
-                    status="FAILED",  # Flagged for DLQ review
+                    status="FAILED",
                     data_size=data_size,
-                    result_data="DLQ: Task completely failed after 3 retries."
+                    result_data=f"Permanent Failure: {str(exc)}"
                 )
                 db.add(failed_record)
                 db.commit()
             except Exception as db_exc:
                 db.rollback()
+                print(f"Database Error during Failure save: {db_exc}")
             finally:
                 db.close()
                 
             return f"Job {job_id} failed permanently."
+
+        # RETRY LOGIC: Wait longer before each new try (2s, 4s, 8s, 16s).
+        # This gives the system 'breathing room' to recover.
+        next_delay = 2 ** (current_retry_count + 1)
+        
+        # Send a 'Warning' message to Discord to let us know a retry is happening.
+        retry_alert = (
+            f"⚠️ **EXPONENTIAL BACKOFF ACTIVE**\n"
+            f"**Job ID:** `{job_id}` | **Status:** Retrying in **{next_delay}s**\n"
+            f"**Reason:** `{str(exc)}`"
+        )
+        send_discord_alert(retry_alert)
+        
+        print(f"[{job_id}] Job failed. Trying again in {next_delay} seconds...")
+        
+        try:
+            # Tell the system to try this job again after the wait time.
+            self.retry(exc=exc, countdown=next_delay)
+        except MaxRetriesExceededError:
+            print(f"[{job_id}] No more retries left.")
 
 @celery_app.task(name="worker.tasks.scheduled_data_ingestion")
 def scheduled_data_ingestion():

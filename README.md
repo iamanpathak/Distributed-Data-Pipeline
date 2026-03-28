@@ -1,79 +1,123 @@
-# Distributed Data Pipeline
+# 🚀 Distributed Data Pipeline: Resilience, Scalability & Monitoring
 
-An end-to-end, resilient, and highly available data processing pipeline built on a decoupled microservices architecture. 
+Hey! I’m Aman. I built this project to demonstrate how a production-grade data pipeline handles massive workloads while staying resilient. Instead of a simple script, I engineered a decoupled microservices architecture to ensure that no matter how hard the system crashes, your data remains safe in the "Vault."
 
-Rather than relying on a single server, this system is designed to ingest, process, and store large volumes of data across multiple isolated compute nodes. It actively breaks down heavy workloads into asynchronous tasks, ensuring that data flows continuously without bottlenecking the main application.
+## 🏗️ System Architecture & Data Flow
 
-Engineered to handle these workloads in real-time, the architecture is built to survive partial node crashes, mitigate severe traffic spikes via API rate-limiting, and guarantee data integrity. It demonstrates production-grade engineering principles including distributed message brokering, automated ETL (Extract, Transform, Load) processes, high-speed volatile caching, and zero-data-loss failure handling through Dead Letter Queues (DLQ), all monitored via a real-time telemetry dashboard.
+I designed this with a "fail-safe" mindset. Each component is isolated so that a crash in one node doesn't halt the entire pipeline.
 
-## System Architecture & Data Flow
-
-The system is designed with a decoupled microservices architecture to ensure high availability and prevent bottlenecks during heavy data processing.
-
-```text
     [Streamlit UI] ──(HTTP POST)──> [FastAPI Gateway]
                                          │
-                                         ├─(Rate Limiter)─> [Redis Cache] (Blocks DDoS)
-                                         │
-                                         └─(Queue Task)───> [Redis Broker]
-                                                                 │
-                                                                 v
-                                                         [Celery Workers] (Scalable Nodes)
-                                                                 │
-                                                                 ├─(Success)─> [PostgreSQL Vault]
-                                                                 │
-                                                                 ├─(Crash)───> [Auto-Retry Logic]
-                                                                 │
-                                                                 └─(Failure)─> [DLQ (Failed Status)] ──> [Discord Alert]
-```
+               ┌─────────────────────────┴─────────────────────────┐
+               ▼                                                   ▼
+        [Redis Cache]                                       [Redis Broker]
+      (Rate Limiter/429)                                   (Task Distribution)
+                                                                   │
+                                                                   ▼
+                                                         [Celery Workers (x3)]
+                                                        (Distributed Execution)
+               ┌───────────────────────────────────────────────────┴────────────────┐
+               ▼                                                                    ▼
+      [PostgreSQL Vault]                                                  [Auto-Retry Logic]
+      (Success/DLQ Storage)                                               (Exponential Backoff)
+                                                                                    │
+                                                                                    ▼
+                                                                            [Discord Alerts]
+                                                                          (Fatal Failure Hook)
 
-### Request Lifecycle
-1. **Client Request:** A user submits a job via the Streamlit dashboard.
-2. **API Gateway & Security:** FastAPI receives the request. It first checks Redis to enforce IP-based rate limiting. If the limit is exceeded, a `429 Too Many Requests` is returned.
-3. **Task Delegation:** If validated, FastAPI assigns a unique `JOB-ID` and pushes the task to the Redis message broker. FastAPI immediately returns a 200 OK response to the client, keeping the gateway unblocked.
-4. **Asynchronous Processing:** A pool of Celery workers continuously polls Redis. An available worker picks up the job and begins heavy computation.
-5. **Fault Tolerance & DLQ:** If a network failure or processing error occurs, the worker automatically retries the task (up to 3 times) with exponential backoff. If all retries fail, the task is routed to a Dead Letter Queue (DLQ) strategy, saving the record as `FAILED` in PostgreSQL, and firing a live Discord Webhook alert.
-6. **Data Persistence & Analytics:** Upon success, the clean data is committed to the PostgreSQL Vault. When the client requests analytics, FastAPI fetches the data from PostgreSQL and caches it in Redis for sub-millisecond retrieval on subsequent calls.
+### 🛣️ The Request Lifecycle
+1. **The Entry Point:** Jobs are submitted via the Streamlit dashboard or FastAPI Swagger.
+2. **Safety First:** I’ve integrated Redis to enforce IP-based rate limiting to prevent API abuse.
+3. **Fire & Forget:** FastAPI assigns a JOB-ID and pushes tasks to Redis, returning a response instantly to keep the gateway unblocked.
+4. **Heavy Lifting:** 3 Scalable Celery Workers process tasks in parallel.
+5. **Handling Chaos:** If a task hits a network snag, my logic triggers an Exponential Backoff strategy.
+6. **The Vault (DLQ):** Results are saved in PostgreSQL. Permanent failures are routed to a Dead Letter Queue (DLQ) and fired to Discord.
 
-## Core Engineering Features
+---
 
-* **Fault Tolerance & Auto-Healing:** Implements `max_retries` with countdown for transient network failures.
-* **Dead Letter Queue (DLQ):** Tasks that fail consistently are caught and logged into the database Vault with a `FAILED` state to ensure zero data loss.
-* **API Rate Limiting:** Redis-backed request throttling (e.g., max 5 requests/minute per IP) to prevent DDoS attacks and API abuse.
-* **Sub-Millisecond Caching:** Frequent dashboard queries are served directly from Redis RAM, bypassing the PostgreSQL disk entirely.
-* **Automated ETL (Celery Beat):** Scheduled cron jobs that extract, transform, and load simulated external API data at regular intervals.
-* **Real-time Alerting:** Integration with Discord Webhooks for immediate production-level alerts on critical system failures.
+## 📸 System Mastery (Visual Proof)
 
-## Technology Stack
+*Note: These are live captures from my development environment showing the system under load.*
 
-* **Backend Gateway:** Python 3.10, FastAPI, SQLAlchemy
-* **Message Broker & Cache:** Celery, Redis
-* **Database Vault:** PostgreSQL 15
-* **Monitoring UI:** Streamlit, Pandas
-* **Infrastructure & Containerization:** Docker, Docker Compose
+### 1. Central Command Center
+The Streamlit dashboard for real-time monitoring of processing loads and system health metrics.
+![Dashboard](./assets/dashboard.png)
 
-## Local Setup & Deployment
+### 2. The PostgreSQL Vault
+A peek into the persistent storage where the system tracks every SUCCESS and FAILURE.
+![Vault Records](./assets/vault-records.png)
 
-### 1. Clone the repository
-```bash
-git clone [https://github.com/iamanpathak/Distributed-Data-Pipeline.git](https://github.com/iamanpathak/Distributed-Data-Pipeline.git)
+### 3. Distributed Worker Cluster (Flower)
+Monitoring 3 concurrent worker nodes handling parallel execution to maximize throughput.
+![Celery Workers](./assets/celery-workers.png)
+
+### 4. Smart Rate Limiting
+Protection in action—this is what happens when the Redis-backed request limit is breached.
+![Rate Limiting](./assets/rate-limiting.png)
+
+### 5. Resilience & Observability (Discord)
+The automatic retry sequence (2s -> 4s -> 8s) before a Fatal Failure is logged.
+![Discord Alerts](./assets/discord-alert.png)
+
+### 6. Dead Letter Queue (DLQ) Audit
+A direct SQL audit proving that every failed job is preserved for manual recovery.
+![Database Audit](./assets/database-dlq.png)
+
+### 7. Interactive API Blueprint
+The FastAPI Swagger UI providing an interactive map for third-party integrations.
+![API Docs](./assets/api-docs.png)
+
+---
+
+## 📂 Project Structure
+
+Distributed-Data-Pipeline/
+├── api/                 # FastAPI Gateway & Rate Limiting
+│   ├── main.py          # Entry point & API Routes
+│   └── database.py      # SQLAlchemy Models & DB Connection
+├── worker/              # Distributed Task Execution (Celery)
+│   ├── tasks.py         # Heavy logic, Backoff & Chaos Testing
+│   └── celery_app.py    # Celery & Broker Config
+├── ui/                  # Monitoring Dashboard (Streamlit)
+│   └── app.py           # Real-time Metrics & Vault UI
+├── assets/              # Live System Screenshots
+├── docker-compose.yml   # Multi-container Orchestration
+├── requirements.txt     # Environment Dependencies
+└── .env.example         # Template for Discord Webhooks
+
+---
+
+## 🔥 Why This Pipeline is Robust
+
+- **Fault Tolerance:** Uses an Exponential Backoff formula (2^n) to avoid overwhelming services during recovery.
+- **Chaos Engineering:** I've built-in logic that simulates a 50% network failure rate to prove the system's resilience.
+- **Zero Data Loss:** All failed tasks are captured in the Dead Letter Queue (PostgreSQL) with a full error trace.
+- **Sub-Millisecond Caching:** Dashboard metrics are served from Redis RAM, bypassing heavy DB queries.
+- **Scalable by Design:** Scale from 1 to 100+ workers by adjusting a single Docker parameter.
+
+---
+
+## 🚀 Get it Running Locally
+
+1. **Clone & Setup**
+git clone https://github.com/iamanpathak/Distributed-Data-Pipeline.git
 cd Distributed-Data-Pipeline
-```
+cp .env.example .env # Add your Discord Webhook URL here
 
-### 2. Configure Environment Variables
-Create a `.env` file in the root directory using the provided template to enable Discord alerts:
-```bash
-cp .env.example .env
-# Edit .env to add your actual Discord Webhook URL
-```
+2. **Launch Infrastructure**
+docker-compose up -d --build --scale worker=3
 
-### 3. Build and Spin Up the Cluster
-This command provisions the database, cache, API, UI, and scales the worker nodes to 3 concurrent processes.
-```bash
-docker-compose up --build --scale worker=3
-```
+3. **Explore the Services**
+- Dashboard: http://localhost:8501
+- API Docs: http://localhost:8000/docs
+- Worker Monitor: http://localhost:5555
 
+<<<<<<< HEAD
 ### 4. Access the Services
 * **Live Dashboard:** `http://localhost:8501`
 * **API Swagger Docs:** `http://localhost:8000/docs`
 * **Celery Task Monitor (Flower):** `http://localhost:5555`
+=======
+---
+Developed with ❤️ by [Aman Pathak](https://github.com/iamanpathak)
+>>>>>>> 8ce8ed5 (feat: finalize production-ready distributed pipeline with microservices orchestration and locked dependencies)

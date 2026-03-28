@@ -21,6 +21,8 @@ services:
   api:
     image: python:3.10-slim
     working_dir: /app
+    env_file:
+      - .env
     volumes:
       - .:/app
     # This command installs the requirements and starts the API server
@@ -51,8 +53,13 @@ services:
   worker:
     image: python:3.10-slim
     working_dir: /app
+    env_file:
+      - .env
     volumes:
       - .:/app
+    dns:                  # Custom DNS resolution for external API fetches
+      - 8.8.8.8           # Primary Google DNS
+      - 8.8.4.4           # Secondary Google DNS
     # This command installs the requirements and starts the Celery worker
     command: >
       bash -c "pip install -r worker/requirements.txt && 
@@ -76,6 +83,8 @@ services:
   beat:
     image: python:3.10-slim
     working_dir: /app
+    env_file:
+      - .env
     volumes:
       - .:/app
     command: >
@@ -84,10 +93,6 @@ services:
     depends_on:
       - redis
       - db
-
-    dns:               # Custom DNS resolution for external API fetches
-      - 8.8.8.8        # Primary Google DNS
-      - 8.8.4.4        # Secondary Google DNS
 
 # This part goes at the VERY BOTTOM of the file, after all services
 volumes:

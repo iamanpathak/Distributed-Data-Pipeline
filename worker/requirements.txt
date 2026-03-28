@@ -1,5 +1,6 @@
-celery
-redis
-sqlalchemy
-psycopg2-binary
-requests
+celery==5.6.3
+redis==7.4.0
+sqlalchemy==2.0.48
+psycopg2-binary==2.9.11
+requests==2.33.0
+python-dotenv==1.2.2

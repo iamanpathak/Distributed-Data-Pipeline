@@ -65,29 +65,39 @@ else:
     
     st.subheader("Live System Metrics")
     m1, m2, m3 = st.columns(3)
-    with m1: st.metric("Total Jobs ✅", len(df))
-    with m2: st.metric("Data Handled 📦", f"{df['data_size'].sum()} MB")
-    with m3: st.metric("System Health 🎯", f"{(len(df[df['status'] == 'SUCCESS']) / len(df)) * 100:.0f}%")
+    with m1: st.metric("Total Jobs Processed", len(df))
+    with m2: st.metric("Total Data Handled", f"{df['data_size'].sum()} MB")
+    with m3: st.metric("System Health", f"{(len(df[df['status'] == 'SUCCESS']) / len(df)) * 100:.0f}%")
         
     st.divider()
     
     col_graph, col_table = st.columns([1.5, 1])
     
     with col_graph:
-        g_col1, g_col2 = st.columns([4, 1])
+        # Adjusted column ratio to push the button further right
+        g_col1, g_col2 = st.columns([6, 1])
         with g_col1: st.subheader("Processing Load Graph")
         with g_col2:
-            if st.button("Refresh"): 
+            if st.button("Refresh", use_container_width=True): 
                 st.rerun()
                 
         # Render the processing load as a responsive bar chart to visualize individual job sizes
-        st.bar_chart(df.set_index("job_id")["data_size"])
+        # Added height=400 to match the dataframe table length
+        st.bar_chart(
+            df, 
+            x="job_id", 
+            y="data_size", 
+            x_label="Job ID", 
+            y_label="Data Size (MB)",
+            height=400
+        )
         
     with col_table:
-        t_col1, t_col2 = st.columns([2, 1])
+        # Adjusted column ratio to push the export button further right
+        t_col1, t_col2 = st.columns([3, 1])
         with t_col1: st.subheader("Vault Records")
         with t_col2:
             csv_data = df.to_csv(index=False).encode('utf-8')
-            st.download_button(label="Export CSV", data=csv_data, file_name="vault_report.csv", mime="text/csv")
+            st.download_button(label="Export CSV", data=csv_data, file_name="vault_report.csv", mime="text/csv", use_container_width=True)
             
         st.dataframe(df.iloc[::-1], use_container_width=True, height=400)

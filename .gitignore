@@ -1,5 +1,6 @@
 # Environments
 .env
+.env.*
 .venv
 env/
 venv/
@@ -21,3 +22,10 @@ Thumbs.db
 # Project specific
 *.csv
 vault_report.csv
+
+# Celery
+celerybeat-schedule
+celerybeat-schedule.db
+
+# IDE (VS Code)
+.vscode/
