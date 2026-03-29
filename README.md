@@ -78,17 +78,22 @@ The FastAPI Swagger UI providing an interactive map for third-party integrations
 ```text
 distributed-data-pipeline/
 ├── api/                  # FastAPI Gateway & Rate Limiting
+│   ├── database.py       # SQLAlchemy Models & DB Connection
 │   ├── main.py           # Entry point & API Routes
-│   └── database.py       # SQLAlchemy Models & DB Connection
-├── worker/               # Distributed Task Execution (Celery)
-│   ├── tasks.py          # Heavy logic, Backoff & Chaos Testing
-│   └── celery_app.py     # Celery & Broker Config
+│   └── requirements.txt  # API-specific dependencies
+├── assets/               # Live System Screenshots for documentation
 ├── ui/                   # Monitoring Dashboard (Streamlit)
-│   └── app.py            # Real-time Metrics & Vault UI
-├── assets/               # Live System Screenshots
+│   ├── app.py            # Real-time Metrics & Vault UI
+│   └── requirements.txt  # UI-specific dependencies
+├── worker/               # Distributed Task Execution (Celery)
+│   ├── database.py       # SQLAlchemy Models for worker node
+│   ├── tasks.py          # Heavy logic, Backoff & Chaos Testing
+│   └── requirements.txt  # Worker-specific dependencies
+├── .env.example          # Template for environment variables & Webhooks
+├── celerybeat-schedule   # Celery Beat schedule database
 ├── docker-compose.yml    # Multi-container Orchestration
-├── requirements.txt      # Environment Dependencies
-└── .env.example          # Template for Discord Webhooks
+├── LICENSE               # MIT License file
+└── README.md             # Project documentation
 ```
 
 ---
