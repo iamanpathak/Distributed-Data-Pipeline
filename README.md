@@ -76,7 +76,7 @@ The FastAPI Swagger UI providing an interactive map for third-party integrations
 ## 📂 Project Structure
 
 ```text
-Distributed-Data-Pipeline/
+distributed-data-pipeline/
 ├── api/                  # FastAPI Gateway & Rate Limiting
 │   ├── main.py           # Entry point & API Routes
 │   └── database.py       # SQLAlchemy Models & DB Connection
