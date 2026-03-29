@@ -109,7 +109,11 @@ distributed-data-pipeline/
 
 ```bash
 git clone https://github.com/iamanpathak/distributed-data-pipeline.git
+```
+```
 cd distributed-data-pipeline
+```
+```
 cp .env.example .env # Add your Discord Webhook URL here
 ```
 
