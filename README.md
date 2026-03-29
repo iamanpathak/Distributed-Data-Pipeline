@@ -129,8 +129,6 @@ docker-compose up -d --build --scale worker=3
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
----
-
 <p align="center">
   Made with ❤️ by <a href="https://github.com/iamanpathak">Aman Pathak</a>
 </p>
