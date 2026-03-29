@@ -106,11 +106,10 @@ distributed-data-pipeline/
 ## 🚀 Get it Running Locally
 
 1. **Clone & Setup**
-```bash
-git clone [https://github.com/iamanpathak/distributed-data-pipeline.git](https://github.com/iamanpathak/distributed-data-pipeline.git)
+
+git clone https://github.com/iamanpathak/distributed-data-pipeline.git
 cd distributed-data-pipeline
 cp .env.example .env # Add your Discord Webhook URL here
-```
 
 2. **Launch Infrastructure**
 ```bash
@@ -123,4 +122,7 @@ docker-compose up -d --build --scale worker=3
 * **Celery Task Monitor (Flower):** http://localhost:5555
 
 ---
-Developed with ❤️ by [Aman Pathak](https://github.com/iamanpathak)
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/iamanpathak">Aman Pathak</a>
+</p>
