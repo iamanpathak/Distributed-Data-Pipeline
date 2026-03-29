@@ -123,6 +123,8 @@ docker-compose up -d --build --scale worker=3
 * **API Swagger Docs:** http://localhost:8000/docs
 * **Celery Task Monitor (Flower):** http://localhost:5555
 
+---
+
 ## 📄 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
