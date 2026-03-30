@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import pandas as pd
+import time
 
 API_URL = "http://api:8000"
 
@@ -78,7 +79,9 @@ else:
         g_col1, g_col2 = st.columns([6, 1])
         with g_col1: st.subheader("Processing Load Graph")
         with g_col2:
-            if st.button("Refresh", use_container_width=True): 
+            if st.button("Refresh", use_container_width=True):
+                st.toast("Dashboard Refreshed! 🔄") 
+                time.sleep(1)
                 st.rerun()
                 
         # Render the processing load (Ignoring negative error test values)
