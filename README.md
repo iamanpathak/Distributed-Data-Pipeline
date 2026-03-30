@@ -36,6 +36,8 @@ I designed this with a "fail-safe" mindset. Each component is isolated so that a
                                                                            (Fatal Failure Hook)
 ```
 
+---
+
 ### 🛣️ The Request Lifecycle
 1. **The Entry Point:** Jobs are submitted via the Streamlit dashboard or FastAPI Swagger.
 2. **Safety First:** I’ve integrated Redis to enforce IP-based rate limiting to prevent API abuse.
