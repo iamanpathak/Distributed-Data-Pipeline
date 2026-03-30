@@ -8,19 +8,19 @@ st.set_page_config(page_title="Data Pipeline UI", layout="wide")
 
 st.markdown("""
 <style>
-/* Clean normal green button */
-div[data-testid="stDownloadButton"] button {
-    border: 1px solid rgba(250, 250, 250, 0.2) !important;
-    background-color: transparent !important;
-    transition: 0.3s;
-}
-div[data-testid="stDownloadButton"] button p {
-    color: #28a745 !important; /* Normal Green Color */
-    font-weight: bold !important;
-}
-div[data-testid="stDownloadButton"] button:hover {
-    border: 1px solid #28a745 !important;
-}
+    /* Clean normal green button */
+    div[data-testid="stDownloadButton"] button {
+        border: 1px solid rgba(250, 250, 250, 0.2) !important;
+        background-color: transparent !important;
+        transition: 0.3s;
+    }
+    div[data-testid="stDownloadButton"] button p {
+        color: #28a745 !important; /* Normal Green Color */
+        font-weight: bold !important;
+    }
+    div[data-testid="stDownloadButton"] button:hover {
+        border: 1px solid #28a745 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -66,7 +66,7 @@ else:
     st.subheader("Live System Metrics")
     m1, m2, m3 = st.columns(3)
     with m1: st.metric("Total Jobs Processed", len(df))
-    with m2: st.metric("Total Data Handled", f"{df['data_size'].sum()} MB")
+    with m2: st.metric("Total Data Handled", f"{df[df['data_size'] > 0]['data_size'].sum()} MB")
     with m3: st.metric("System Health", f"{(len(df[df['status'] == 'SUCCESS']) / len(df)) * 100:.0f}%")
         
     st.divider()
@@ -81,10 +81,9 @@ else:
             if st.button("Refresh", use_container_width=True): 
                 st.rerun()
                 
-        # Render the processing load as a responsive bar chart to visualize individual job sizes
-        # Added height=400 to match the dataframe table length
+        # Render the processing load (Ignoring negative error test values)
         st.bar_chart(
-            df, 
+            df[df['data_size'] > 0], 
             x="job_id", 
             y="data_size", 
             x_label="Job ID", 

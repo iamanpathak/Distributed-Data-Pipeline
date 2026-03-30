@@ -117,6 +117,14 @@ distributed-data-pipeline/
 
 ---
 
+### 🧠 Design Decisions
+
+- **Cumulative Metrics:** All system metrics (Total Jobs Processed, Total Data Handled) are intentionally cumulative to reflect continuous system load and real-world pipeline behavior. Reset functionality can be extended if required, but data retention is prioritized for observability and debugging.
+
+- **Data Integrity Handling:** The system ignores invalid or negative data inputs during processing to ensure that only meaningful, positive workloads are executed and reflected in system metrics. This prevents distortion of performance insights and maintains consistency in analytics.
+
+---
+
 ## 🚀 Get it Running Locally
 
 1. **Clone & Setup**
