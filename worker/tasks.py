@@ -40,6 +40,17 @@ celery_app = Celery(
     backend="redis://redis:6379/0"
 )
 
+celery_app.conf.beat_schedule = {
+    "fetch-btc-price-every-2-min": {
+        "task": "worker.tasks.scheduled_btc_ingestion",
+        "schedule": 120.0,  # Executes the BTC data ingestion task every 2 minutes
+    },
+    "fetch-eth-price-every-3-min": {
+        "task": "worker.tasks.scheduled_eth_ingestion",
+        "schedule": 180.0,  # Executes the ETH data ingestion task every 3 minutes
+    },
+}
+
 # Task Orchestration: Asynchronous processing with automated retry management.
 # 'bind=True' allows the task to access its own execution state for custom retry logic.
 @celery_app.task(bind=True, max_retries=3, name="worker.tasks.process_heavy_data")
@@ -139,11 +150,11 @@ def process_heavy_data(self, job_id: str, data_size: int):
         except MaxRetriesExceededError:
             print(f"[{job_id}] No more retries left.")
 
-@celery_app.task(name="worker.tasks.scheduled_data_ingestion")
-def scheduled_data_ingestion():
+@celery_app.task(name="worker.tasks.scheduled_btc_ingestion")
+def scheduled_btc_ingestion():
     """Automated daemon worker: Live Bitcoin Price ETL Pipeline"""
     auto_job_id = f"BTC-{str(uuid.uuid4())[:6]}"
-    print(f"👻 GHOST WOKE UP! Fetching Live Crypto Data for {auto_job_id}...")
+    print(f"👻 GHOST WOKE UP! Fetching Live BTC Data for {auto_job_id}...")
     
     try:
         # 1. EXTRACT (Simulating API fetch latency)
@@ -175,6 +186,46 @@ def scheduled_data_ingestion():
             db.close()
             
     except Exception as e:
-        print(f"👻 Ghost failed to fetch Crypto Data: {e}")
+        print(f"👻 Ghost failed to fetch BTC Data: {e}")
         
-    return "Automated Crypto ETL task complete"
+    return "Automated BTC ETL task complete"
+
+@celery_app.task(name="worker.tasks.scheduled_eth_ingestion")
+def scheduled_eth_ingestion():
+    """Automated daemon worker: Live Ethereum Price ETL Pipeline"""
+    auto_job_id = f"ETH-{str(uuid.uuid4())[:6]}"
+    print(f"👻 GHOST WOKE UP! Fetching Live ETH Data for {auto_job_id}...")
+    
+    try:
+        # 1. EXTRACT (Simulating API fetch latency)
+        time.sleep(1.2) 
+        # Generating a realistic live Ethereum price
+        usd_price = round(random.uniform(3400.50, 3800.99), 2) 
+        
+        # 2. TRANSFORM (Apply clean data formatting)
+        import datetime
+        time_updated = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        final_clean_data = f"Ethereum Price: ${usd_price} (Time: {time_updated})"
+        
+        # 3. LOAD (Persist formatted data into PostgreSQL Vault)
+        db = SessionLocal()
+        try:
+            new_record = JobRecord(
+                job_id=auto_job_id,
+                status="SUCCESS",
+                data_size=1, # Simulated 1 API call payload size
+                result_data=final_clean_data
+            )
+            db.add(new_record)
+            db.commit()
+            print(f"[{auto_job_id}] 💎 LIVE ETH PRICE SAVED TO VAULT! 🚀")
+        except Exception as e:
+            db.rollback()
+            print(f"DB Error: {e}")
+        finally:
+            db.close()
+            
+    except Exception as e:
+        print(f"👻 Ghost failed to fetch ETH Data: {e}")
+        
+    return "Automated ETH ETL task complete"

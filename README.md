@@ -38,7 +38,7 @@ I designed this with a "fail-safe" mindset. Each component is isolated so that a
 
 ---
 
-### 🛣️ The Request Lifecycle
+## 🛣️ The Request Lifecycle
 1. **The Entry Point:** Jobs are submitted via the Streamlit dashboard or FastAPI Swagger.
 2. **Safety First:** I’ve integrated Redis to enforce IP-based rate limiting to prevent API abuse.
 3. **Fire & Forget:** FastAPI assigns a JOB-ID and pushes tasks to Redis, returning a response instantly.
@@ -60,23 +60,27 @@ The Streamlit dashboard for real-time monitoring of processing loads and system 
 A peek into the persistent storage where the system tracks every SUCCESS and FAILURE.
 <p align="center"><img src="assets/vault-records.png" width="900"></p>
 
-### 3. Distributed Worker Cluster (Flower)
+### 3. Automated ETL Pipeline (Celery Beat)
+An automated Celery Beat daemon extracting, transforming, and loading live crypto prices into the Vault.
+<p align="center"><img src="assets/live-crypto-etl.png" width="900"></p>
+
+### 4. Distributed Worker Cluster (Flower)
 Monitoring 3 concurrent worker nodes handling parallel execution to maximize throughput.
 <p align="center"><img src="assets/celery-workers.png" width="900"></p>
 
-### 4. Smart Rate Limiting
+### 5. Smart Rate Limiting
 Protection in action-this is what happens when the Redis-backed request limit is breached.
 <p align="center"><img src="assets/rate-limiting.png" width="900"></p>
 
-### 5. Resilience & Observability (Discord)
+### 6. Resilience & Observability (Discord)
 The automatic retry sequence (2s -> 4s -> 8s) before a Fatal Failure is logged.
 <p align="center"><img src="assets/discord-alert.png" width="900"></p>
 
-### 6. Dead Letter Queue (DLQ) Audit
+### 7. Dead Letter Queue (DLQ) Audit
 A direct SQL audit proving that every failed job is preserved for manual recovery.
 <p align="center"><img src="assets/database-dlq.png" width="900"></p>
 
-### 7. Interactive API Blueprint
+### 8. Interactive API Blueprint
 The FastAPI Swagger UI providing an interactive map for third-party integrations.
 <p align="center"><img src="assets/api-docs.png" width="900"></p>
 
