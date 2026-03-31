@@ -56,25 +56,25 @@ I designed this with a "fail-safe" mindset. Each component is isolated so that a
 The Streamlit dashboard for real-time monitoring of processing loads and system health metrics.
 <p align="center"><img src="assets/dashboard.png" width="900"></p>
 
-### 2. The PostgreSQL Vault
-A peek into the persistent storage where the system tracks every SUCCESS and FAILURE.
-<p align="center"><img src="assets/vault-records.png" width="900"></p>
-
-### 3. Automated ETL Pipeline (Celery Beat)
-An automated Celery Beat daemon extracting, transforming, and loading live crypto prices into the Vault.
-<p align="center"><img src="assets/live-crypto-etl.png" width="900"></p>
-
-### 4. Distributed Worker Cluster (Flower)
-Monitoring 3 concurrent worker nodes handling parallel execution to maximize throughput.
-<p align="center"><img src="assets/celery-workers.png" width="900"></p>
-
-### 5. Smart Rate Limiting
+### 2. Smart Rate Limiting
 Protection in action-this is what happens when the Redis-backed request limit is breached.
 <p align="center"><img src="assets/rate-limiting.png" width="900"></p>
 
-### 6. Resilience & Observability (Discord)
+### 3. Distributed Worker Cluster (Flower)
+Monitoring 3 concurrent worker nodes handling parallel execution to maximize throughput.
+<p align="center"><img src="assets/celery-workers.png" width="900"></p>
+
+### 4. Resilience & Observability (Discord)
 The automatic retry sequence (2s -> 4s -> 8s) before a Fatal Failure is logged.
 <p align="center"><img src="assets/discord-alert.png" width="900"></p>
+
+### 5. The PostgreSQL Vault
+A peek into the persistent storage where the system tracks every SUCCESS and FAILURE.
+<p align="center"><img src="assets/vault-records.png" width="900"></p>
+
+### 6. Automated ETL Pipeline (Celery Beat)
+An automated Celery Beat daemon extracting, transforming, and loading live crypto prices into the Vault.
+<p align="center"><img src="assets/live-crypto-etl.png" width="900"></p>
 
 ### 7. Dead Letter Queue (DLQ) Audit
 A direct SQL audit proving that every failed job is preserved for manual recovery.
