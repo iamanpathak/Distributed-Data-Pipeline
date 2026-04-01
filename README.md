@@ -103,7 +103,6 @@ distributed-data-pipeline/
 │   ├── tasks.py          # Heavy logic, Backoff & Chaos Testing
 │   └── requirements.txt  # Worker-specific dependencies
 ├── .env.example          # Template for environment variables & Webhooks
-├── celerybeat-schedule   # Celery Beat schedule database
 ├── docker-compose.yml    # Multi-container Orchestration
 ├── LICENSE               # MIT License file
 └── README.md             # Project documentation
