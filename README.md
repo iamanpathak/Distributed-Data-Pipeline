@@ -100,7 +100,7 @@ distributed-data-pipeline/
 │   └── requirements.txt  # Worker-specific dependencies
 ├── .env.example          # Template for environment variables & Webhooks
 ├── docker-compose.yml    # Multi-container Orchestration
-├── LICENSE               # MIT License file
+├── LICENSE               # MIT License
 └── README.md             # Project documentation
 ```
 
