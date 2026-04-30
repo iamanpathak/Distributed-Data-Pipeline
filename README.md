@@ -21,7 +21,7 @@ I designed this with a "fail-safe" mindset. Each component is isolated so that a
                                   ┌─────────────┴─────────────┐
                                   ▼                           ▼
                             [Redis Cache]               [Redis Broker]
-                         (Rate Limiter/429)           (Task Distribution)
+                        (Rate Limiter/429)           (Task Distribution)
                                                               │
                                                               ▼
                                                     [Celery Workers (x3)]
@@ -79,10 +79,6 @@ An automated Celery Beat daemon extracting, transforming, and loading live crypt
 ### 7. Dead Letter Queue (DLQ) Audit
 A direct SQL audit proving that every failed job is preserved for manual recovery.
 <p align="center"><img src="assets/database-dlq.png" width="900"></p>
-
-### 8. Interactive API Blueprint
-The FastAPI Swagger UI providing an interactive map for third-party integrations.
-<p align="center"><img src="assets/api-docs.png" width="900"></p>
 
 ---
 
