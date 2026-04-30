@@ -34,7 +34,8 @@ I designed this with a "fail-safe" mindset. Each component is isolated so that a
                                                                          │
                                                                          ▼
                                                                  [Discord Alerts]
-                                                               (Fatal Failure Hook)
+                                                               (Fatal Failure Hook)                                                               
+```
 
 ---
 
