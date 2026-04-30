@@ -18,22 +18,22 @@ I designed this with a "fail-safe" mindset. Each component is isolated so that a
 ```text
 [Streamlit UI] ──(HTTP POST)──> [FastAPI Gateway]
                                         │
-                    ┌───────────────────┴───────────────────┐
-                    ▼                                       ▼
-              [Redis Cache]                           [Redis Broker]
-           (Rate Limiter/429)                      (Task Distribution)
-                                                            │
-                                                            ▼
-                                                  [Celery Workers (x3)]
-                                                 (Distributed Execution)
-                    ┌───────────────────────────────────────┴─────────┐
-                    ▼                                                 ▼
-           [PostgreSQL Vault]                                 [Auto-Retry Logic]
-          (Success/DLQ Storage)                              (Exponential Backoff)
-                                                                      │
-                                                                      ▼
-                                                              [Discord Alerts]
-                                                            (Fatal Failure Hook)                                                               
+                 ┌──────────────────────┴─────┐
+                 ▼                            ▼
+           [Redis Cache]                [Redis Broker]
+        (Rate Limiter/429)           (Task Distribution)
+                                              │
+                                              ▼
+                                    [Celery Workers (x3)]
+                                   (Distributed Execution)
+                 ┌────────────────────────────┴─────┐
+                 ▼                                  ▼
+         [PostgreSQL Vault]                 [Auto-Retry Logic]
+       (Success/DLQ Storage)              (Exponential Backoff)
+                                                    │
+                                                    ▼
+                                             [Discord Alerts]
+                                           (Fatal Failure Hook)                                                               
 ```
 
 ---
